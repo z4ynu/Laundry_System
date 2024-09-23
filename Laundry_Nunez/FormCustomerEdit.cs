@@ -13,14 +13,39 @@ namespace Laundry_Nunez
 {
     public partial class FormCustomerEdit : Form
     {
+        // Properties to get/set the values
+        private int CustomerId { get; set; }
+        public string FullName { get; set; }
+        public DateTime Birthdate { get; set; }
+        public string Gender { get; set; }
+        public string Address { get; set; }
+        public string ContactNo { get; set; }
+        public string EmailAddress { get; set; }
 
         private GlobalProcedures proc;
 
-        public FormCustomerEdit()
+        public FormCustomerEdit(int customer_id, string fullName, DateTime birthdate, string gender, string address, string contactNo,
+            string emailAddress)
         {
             InitializeComponent();
             proc = new GlobalProcedures();
             proc.fncConnectToDatabase();
+
+            CustomerId = customer_id;
+            txtFullName.Text = fullName;
+            dtmBirthdate.Value = birthdate;
+            // Set the ComboBox's value based on gender
+            if (gender == "Male")
+                cmbGender.SelectedItem = "Male";
+            else if (gender == "Female")
+                cmbGender.SelectedItem = "Female";
+            txtAddress.Text = address;
+            txtContactNo.Text = contactNo;
+            txtEmailAddress.Text = emailAddress;
+        }
+
+        private void Init()
+        {
         }
 
         private void lblBack_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -46,7 +71,17 @@ namespace Laundry_Nunez
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
+            // When edit is clicked, store the shit data
+            FullName = txtFullName.Text;
+            Birthdate = dtmBirthdate.Value;
+            Gender = cmbGender.SelectedItem.ToString();
+            Address = txtAddress.Text;
+            ContactNo = txtContactNo.Text;
+            EmailAddress = txtEmailAddress.Text;
             
+            DialogResult = DialogResult.OK;  // Indicate that editing is successful
+            procEditCustomer();
+            Close();
         }
 
         public void procEditCustomer()
@@ -54,21 +89,21 @@ namespace Laundry_Nunez
             try
             {
                 proc.sqlCommand.Parameters.Clear();
-                proc.sqlCommand.CommandText = "procUpdateCustomer";
+                proc.sqlCommand.CommandText = "procEditCustomer";
                 proc.sqlCommand.CommandType = CommandType.StoredProcedure;
-                proc.sqlCommand.Parameters.AddWithValue("@p_id", Convert.ToInt32(dtgvCustomer.CurrentRow.Cells[0].Value));
-                proc.sqlCommand.Parameters.AddWithValue("@p_fullname", editFullname.Text);
-                proc.sqlCommand.Parameters.AddWithValue("@p_birthdate", editBirthdate.Value.ToString("yyyy-MM-dd"));
-                proc.sqlCommand.Parameters.AddWithValue("@p_gender", editGender.Text);
-                proc.sqlCommand.Parameters.AddWithValue("@p_address", editAddress.Text);
-                proc.sqlCommand.Parameters.AddWithValue("@p_contactno", editContactNo.Text);
-                proc.sqlCommand.Parameters.AddWithValue("@p_emailadd", editEmailAdd.Text);
-                proc.sqlCommand.Parameters.AddWithValue("@p_cust_photo", imgCustomer);
+                proc.sqlCommand.Parameters.AddWithValue("@p_id", CustomerId);
+                proc.sqlCommand.Parameters.AddWithValue("@p_fullname", FullName);
+                proc.sqlCommand.Parameters.AddWithValue("@p_birthdate", Birthdate);
+                proc.sqlCommand.Parameters.AddWithValue("@p_gender", Gender);
+                proc.sqlCommand.Parameters.AddWithValue("@p_address", Address);
+                proc.sqlCommand.Parameters.AddWithValue("@p_contactno", ContactNo);
+                proc.sqlCommand.Parameters.AddWithValue("@p_emailadd", EmailAddress);
+                proc.sqlCommand.Parameters.AddWithValue("@p_cust_photo", "");
                 proc.sqlCommand.ExecuteNonQuery();
-
+                
                 MessageBox.Show("Record updated successfully.", "Update", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                procGetCustomer();
+                //
+                // procGetCustomer();
             }
             catch (Exception ex)
             {

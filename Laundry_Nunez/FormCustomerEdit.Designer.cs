@@ -388,7 +388,6 @@
             this.cyberGroupBox1.ResumeLayout(false);
             this.cyberGroupBox1.PerformLayout();
             this.ResumeLayout(false);
-
         }
 
         #endregion
