@@ -1,28 +1,24 @@
 ﻿using MySql.Data.MySqlClient;
 using PrjLaundry;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Laundry_Nunez
 {
     public partial class FormCustomer : Form
     {
-
         private GlobalProcedures proc;
         int row;
+        private int selectedRowIndex = -1;
 
         public FormCustomer()
         {
             InitializeComponent();
             proc = new GlobalProcedures();
             proc.fncConnectToDatabase();
+            procGetCustomer();
+            dtgvCustomer.CellClick += dtgvCustomer_CellContentClick;
         }
 
         private void btnProfile_Click(object sender, EventArgs e)
@@ -71,7 +67,7 @@ namespace Laundry_Nunez
 
         private void FormCustomer_Load(object sender, EventArgs e)
         {
-            procGetCustomer();
+            // procGetCustomer();
         }
 
         private void btnAddCustomer_Click(object sender, EventArgs e)
@@ -91,7 +87,11 @@ namespace Laundry_Nunez
 
         private void dtgvCustomer_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-
+            // Console.WriteLine(e.RowIndex);
+            if (e.RowIndex >= 0)
+            {
+                selectedRowIndex = e.RowIndex;
+            }
         }
 
         public void procGetCustomer()
@@ -192,18 +192,45 @@ namespace Laundry_Nunez
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            FormCustomerEdit edit = new FormCustomerEdit();
+            // Console.WriteLine(selectedRowIndex);
+            FormCustomerEdit edit;
+            if (selectedRowIndex >= 0)
+            {
+                DataGridViewRow selectedRow = dtgvCustomer.Rows[selectedRowIndex];
+                // Retrieve data from the selected row
+                int customer_id = Convert.ToInt32(selectedRow.Cells["id"].Value.ToString());
+                string fullName = selectedRow.Cells["FullName"].Value.ToString();
+                DateTime birthdate = DateTime.Parse(selectedRow.Cells["Birthdate"].Value.ToString());
+                string gender = selectedRow.Cells["Gender"].Value.ToString();
+                Console.WriteLine(gender);
+                string address = selectedRow.Cells["Address"].Value.ToString();
+                string contactNo = selectedRow.Cells["ContactNo"].Value.ToString();
+                string emailAddress = selectedRow.Cells["EmailAdd"].Value.ToString();
+                
+                edit = new FormCustomerEdit(customer_id, fullName, birthdate, gender, address, contactNo, emailAddress);
+                Hide();
+                // edit.ShowDialog();
+                
+                if (edit.ShowDialog() == DialogResult.OK)  // Check if the user clicked Save
+                {
+                    // Update the selected row with the new values from Form2
+                    // selectedRow.Cells["FullName"].Value = edit.FullName;
+                    // selectedRow.Cells["Birthdate"].Value = edit.Birthdate.ToShortDateString();
+                    // selectedRow.Cells["Gender"].Value = edit.Gender;
+                    // selectedRow.Cells["Address"].Value = edit.Address;
+                    // selectedRow.Cells["ContactNo"].Value = edit.ContactNo;
+                    // selectedRow.Cells["EmailAdd"].Value = edit.EmailAddress;
+                    procGetCustomer();
 
-            edit.txtFullName.Text = dtgvCustomer.CurrentRow.Cells[0].Value.ToString();
-            edit.dtmBirthdate.Value = Convert.ToDateTime(dtgvCustomer.CurrentRow.Cells[1].Value);
-            edit.cmbGender.Text = dtgvCustomer.CurrentRow.Cells[2].Value.ToString();
-            edit.txtAddress.Text = dtgvCustomer.CurrentRow.Cells[3].Value.ToString();
-            edit.txtContactNo.Text = dtgvCustomer.CurrentRow.Cells[4].Value.ToString();
-            edit.txtEmailAddress.Text = dtgvCustomer.CurrentRow.Cells[5].Value.ToString();
-
-
-            this.Hide();
-            edit.Show();
+                    // Refresh the DataGridView if necessary
+                    dtgvCustomer.Refresh();
+                    Show();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a row to edit.");
+            }
         }
 
         private void btnRemove_Click(object sender, EventArgs e)
